@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Car Racing Game</title>
+<style>
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: Arial;
+    text-align: center;
+}
+h1 {
+    color: #00ff99;
+}
+#game {
+    width: 350px;
+    height: 550px;
+    background: #444;
+    margin: auto;
+    position: relative;
+    overflow: hidden;
+    border: 5px solid white;
+}
+.road-line {
+    position: absolute;
+    width: 8px;
+    height: 70px;
+    background: white;
+    left: 171px;
+}
+.car {
+    position: absolute;
+    width: 45px;
+    height: 75px;
+    border-radius: 10px;
+    background: #00ccff;
+    bottom: 20px;
+    left: 150px;
+    border: 3px solid white;
+}
+.enemy {
+    position: absolute;
+    width: 45px;
+    height: 75px;
+    background: red;
+    border-radius: 10px;
+    border: 3px solid white;
+}
+#score {
+    font-size: 24px;
+    margin: 10px;
+}
+button {
+    padding: 12px 25px;
+    margin: 10px;
+    background: #00cc66;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🏎️ CAR RACING GAME</h1>
+<div id="score">Score: 0</div>
+
+<div id="game">
+    <div class="car" id="player"></div>
+</div>
+
+<button onclick="startGame()">START / RESTART</button>
+<p>Use LEFT and RIGHT arrow keys to drive.</p>
+
+<script>
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+const scoreText = document.getElementById("score");
+
+let playerX = 150;
+let score = 0;
+let speed = 4;
+let enemies = [];
+let running = false;
+let animation;
+let frame = 0;
+
+document.addEventListener("keydown", function(e) {
+    if (!running) return;
+
+    if (e.key === "ArrowLeft") {
+        playerX -= 25;
+    }
+    if (e.key === "ArrowRight") {
+        playerX += 25;
+    }
+
+    playerX = Math.max(0, Math.min(300, playerX));
+    player.style.left = playerX + "px";
+});
+
+function startGame() {
+    cancelAnimationFrame(animation);
+
+    enemies.forEach(enemy => enemy.element.remove());
+    enemies = [];
+
+    playerX = 150;
+    score = 0;
+    speed = 4;
+    frame = 0;
+    running = true;
+
+    player.style.left = playerX + "px";
+    scoreText.innerText = "Score: 0";
+
+    gameLoop();
+}
+
+function gameLoop() {
+    if (!running) return;
+
+    frame++;
+
+    if (frame % 55 === 0) {
+        let enemy = document.createElement("div");
+        enemy.className = "enemy";
+
+        let x = Math.floor(Math.random() * 7) * 45;
+        enemy.style.left = x + "px";
+        enemy.style.top = "-80px";
+
+        game.appendChild(enemy);
+
+        enemies.push({
+            element: enemy,
+            x: x,
+            y: -80
+        });
+    }
+
+    enemies.forEach((enemy, index) => {
+        enemy.y += speed;
+        enemy.element.style.top = enemy.y + "px";
+
+        // Collision detection
+        if (
+            enemy.y + 75 > 455 &&
+            enemy.y < 530 &&
+            enemy.x < playerX + 45 &&
+            enemy.x + 45 > playerX
+        ) {
+            endGame();
+        }
+
+        if (enemy.y > 550) {
+            enemy.element.remove();
+            enemies.splice(index, 1);
+            score += 10;
+            scoreText.innerText = "Score: " + score;
+
+            if (score % 50 === 0) speed += 0.5;
+        }
+    });
+
+    if (running) {
+        animation = requestAnimationFrame(gameLoop);
+    }
+}
+
+function endGame() {
+    running = false;
+    cancelAnimationFrame(animation);
+    alert("GAME OVER! Your Score: " + score);
+}
+</script>
+
+</body>
+</html>
